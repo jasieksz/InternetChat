@@ -1,5 +1,10 @@
+import org.eclipse.jetty.websocket.api.Session;
+import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static j2html.TagCreator.*;
 import static spark.Spark.*;
@@ -36,3 +41,9 @@ public class Chat {
         ).render();
     }
 }
+/* some error
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+
+ */
