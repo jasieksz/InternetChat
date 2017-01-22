@@ -44,4 +44,15 @@ public class Channel {
             }
         });
     }
+
+    public void broadcastSettings(Session user) {
+        try {
+            user.getRemote().sendString(String.valueOf(new JSONObject()
+                    .put("channel", "true")
+                    .put("userlist", userNameMap.values())
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

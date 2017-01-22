@@ -14,7 +14,7 @@ public class ChatWebSocketHandler {
     public void onConnect(Session session) throws Exception {
         String username = chat.getUsernameFromCookie(session);
         chat.addUser(session);
-        //chat.broadcastMessage(sender = "Server", msg = (username + " joined the chat"));
+        chat.broadcastSettings(session);
 
     }
 

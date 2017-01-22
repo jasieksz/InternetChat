@@ -39,7 +39,7 @@ public class ChatFunctions {
             userNameMap.remove(session);
     }
 
-    public void broadcastMessageInMenu(String sender, String message) {
+    public void broadcastMessageInMenu() {
         userNameMap.keySet().stream().filter(Session::isOpen).forEach(this::broadcastSettings);
     }
 
@@ -55,14 +55,13 @@ public class ChatFunctions {
     public void createChannel(Session user, String channelName) {
         if (!nameChannelMap.containsKey(channelName))
             nameChannelMap.put(channelName, new Channel(channelName, true));
-        broadcastSettings(user);
-        broadcastMessageInMenu("Server","Updating channels");
+        broadcastMessageInMenu();
     }
 
     public void joinChannel(Session user, String channelname) {
-        broadcastMessage("Server", getUsernameFromMap(user) + " joined the channel");
         userChannelMap.put(user,nameChannelMap.get(channelname));
         nameChannelMap.get(channelname).addUser(user,getUsernameFromMap(user));
+        nameChannelMap.get(channelname).broadcastMessageOnChannel("Server",getUsernameFromMap(user) + " joined the channel");
         userNameMap.remove(user);
     }
 
@@ -70,9 +69,9 @@ public class ChatFunctions {
         Channel tmpChannel = userChannelMap.get(user);
         addUser(user);
         tmpChannel.removeUser(user);
+        tmpChannel.broadcastMessageOnChannel("Server",getUsernameFromMap(user)+ " left the channel");
         userChannelMap.remove(user);
-        broadcastSettings(user);
-
+        broadcastMessageInMenu();
     }
 
     public void removeEmptyChannels(){
