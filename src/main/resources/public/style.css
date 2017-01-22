@@ -71,6 +71,17 @@ li {
     animation: enter .2s 1;
 }
 
+#channellist {
+    position: fixed;
+    left: 50%;
+    list-style: none;
+    margin-left: 250px;
+    background: #f0f0f9;
+    padding: 5px 10px;
+    width: 150px;
+    top: 11px;
+}
+
 @keyframes enter {
     from { transform: none;        }
     50%  { transform: scale(1.05); }

@@ -12,6 +12,8 @@ import static j2html.TagCreator.*;
 public class ChatFunctions {
 
     public Map<Session, String> userNameMap = new ConcurrentHashMap<>();
+    public Map<Session, Channel> userChannelMap = new ConcurrentHashMap<>();
+    public Map<String, Channel> nameChannelMap = new ConcurrentHashMap<>();
 
     public String getUsernameFromCookie(Session user) {
         for (HttpCookie cookie : user.getUpgradeRequest().getCookies()){
@@ -21,16 +23,67 @@ public class ChatFunctions {
         return null;
     }
 
+    public String getUsernameFromMap(Session session){
+        if(userNameMap.containsKey(session))
+            return userNameMap.get(session);
+        return null;
+    }
+
     public void addUser(Session session){
         if (!userNameMap.containsKey(session))
             userNameMap.put(session,getUsernameFromCookie(session));
     }
 
+    public void removeUser(Session session){
+        if (userNameMap.containsKey(session))
+            userNameMap.remove(session);
+    }
+
+    public void broadcastMessageInMenu(String sender, String message) {
+        userNameMap.keySet().stream().filter(Session::isOpen).forEach(this::broadcastSettings);
+    }
+
+    ///
+    // CHANNEL ===============================================================================
+    ///
+
+    public void userMessage(Session user, String content) {
+        Channel tmpChannel = userChannelMap.get(user);
+        tmpChannel.broadcastMessageOnChannel(tmpChannel.userNameMap.get(user),content);
+    }
+
+    public void createChannel(Session user, String channelName) {
+        if (!nameChannelMap.containsKey(channelName))
+            nameChannelMap.put(channelName, new Channel(channelName, true));
+        broadcastSettings(user);
+        broadcastMessageInMenu("Server","Updating channels");
+    }
+
+    public void joinChannel(Session user, String channelname) {
+        broadcastMessage("Server", getUsernameFromMap(user) + " joined the channel");
+        userChannelMap.put(user,nameChannelMap.get(channelname));
+        nameChannelMap.get(channelname).addUser(user,getUsernameFromMap(user));
+        userNameMap.remove(user);
+    }
+
+    public void changeChannel(Session user) {
+        Channel tmpChannel = userChannelMap.get(user);
+        addUser(user);
+        tmpChannel.removeUser(user);
+        userChannelMap.remove(user);
+        broadcastSettings(user);
+
+    }
+
+    public void removeEmptyChannels(){
+
+    }
 
     public void broadcastMessage(String sender, String message) {
         userNameMap.keySet().stream().filter(Session::isOpen).forEach(session -> {
             try {
                 session.getRemote().sendString(String.valueOf(new JSONObject()
+                        .put("channel", "true")
                         .put("userMessage", createHtmlMessageFromSender(sender, message))
                         .put("userlist", userNameMap.values())
                 ));
@@ -39,6 +92,20 @@ public class ChatFunctions {
             }
         });
     }
+
+    public void broadcastSettings(Session user) {
+        try {
+            user.getRemote().sendString(String.valueOf(new JSONObject()
+                    .put("channel", "false")
+                    .put("channellist", nameChannelMap.keySet())
+                    .put("userlist", userNameMap.values())
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     public  String createHtmlMessageFromSender(String sender, String message) {
         return article().with(

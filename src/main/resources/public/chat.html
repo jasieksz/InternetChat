@@ -6,14 +6,23 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+<div id="channelChat" style="display: none">
     <div id="chatControls">
         <input id="message" placeholder="Type your message">
         <button id="sendButton">Send</button>
-        <button id="changeButton">Change Channel</button>
+        <button id="change">Change</button>
     </div>
     <ul id="userlist"> <!-- Built by JS --> </ul>
     <div id="chat">    <!-- Built by JS --> </div>
+</div>
 
+<div id="channelSelect" style="display: block">
+    <input id="channelname" placeholder="Type new channel name">
+    <button id="createButton">Create</button>
+    <ul id="channellist"> <!-- Built by JS --></ul>
+
+</div>
 
 <script src="chat.js"></script>
 </body>
