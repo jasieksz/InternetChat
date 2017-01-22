@@ -7,8 +7,14 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 @WebSocket
 public class ChatWebSocketHandler {
 
+    private ChatFunctions chat = new ChatFunctions();
+    private String sender,msg;
+
     @OnWebSocketConnect
-    public void onConnect(Session user) throws Exception {
+    public void onConnect(Session session) throws Exception {
+        String username = chat.getUsernameFromCookie(session);
+        chat.addUser(session);
+        chat.broadcastMessage(sender = "Server", msg = (username + " joined the chat"));
 
     }
 
@@ -19,5 +25,6 @@ public class ChatWebSocketHandler {
 
     @OnWebSocketMessage
     public void onMessage(Session user, String message) {
+        chat.broadcastMessage(sender = chat.userNameMap.get(user), msg = message);
     }
 }

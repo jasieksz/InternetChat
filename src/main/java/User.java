@@ -1,8 +1,8 @@
 public class User {
 
-    private final String userName;
+    private final String username;
 
-    public User(String userName) {
-        this.userName = userName;
+    public User(String username) {
+        this.username = username;
     }
 }
