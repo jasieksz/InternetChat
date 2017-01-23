@@ -9,6 +9,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Channel {
 
     public final Boolean canDelete;
+
+    public String getChannelName() {
+        return channelName;
+    }
+
     public String channelName;
     public Map<Session, String> userNameMap = new ConcurrentHashMap<>();
     private ChatFunctions chat = new ChatFunctions();
@@ -16,6 +21,10 @@ public class Channel {
     public Channel(String channelName,Boolean canDelete) {
         this.canDelete = canDelete;
         this.channelName = channelName;
+    }
+
+    public Boolean isEmpty(){
+        return userNameMap.isEmpty();
     }
 
     public void addUser(Session user, String usernameFromMap) {

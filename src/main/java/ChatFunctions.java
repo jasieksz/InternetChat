@@ -3,9 +3,12 @@ import org.json.JSONObject;
 
 import java.net.HttpCookie;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
 
@@ -14,6 +17,17 @@ public class ChatFunctions {
     public Map<Session, String> userNameMap = new ConcurrentHashMap<>();
     public Map<Session, Channel> userChannelMap = new ConcurrentHashMap<>();
     public Map<String, Channel> nameChannelMap = new ConcurrentHashMap<>();
+    private final Boolean menu;
+
+    public ChatFunctions(Boolean menu) {
+        this.menu = menu;
+        nameChannelMap.put("Bot",new Channel("Bot",false));
+        nameChannelMap.put("General",new Channel("General",false));
+    }
+
+    public ChatFunctions(){
+        this.menu=null;
+    }
 
     public String getUsernameFromCookie(Session user) {
         for (HttpCookie cookie : user.getUpgradeRequest().getCookies()){
@@ -52,7 +66,7 @@ public class ChatFunctions {
         tmpChannel.broadcastMessageOnChannel(tmpChannel.userNameMap.get(user),content);
     }
 
-    public void createChannel(Session user, String channelName) {
+    public void createChannel(String channelName) {
         if (!nameChannelMap.containsKey(channelName))
             nameChannelMap.put(channelName, new Channel(channelName, true));
         broadcastMessageInMenu();
@@ -69,13 +83,26 @@ public class ChatFunctions {
         Channel tmpChannel = userChannelMap.get(user);
         addUser(user);
         tmpChannel.removeUser(user);
-        tmpChannel.broadcastMessageOnChannel("Server",getUsernameFromMap(user)+ " left the channel");
         userChannelMap.remove(user);
+        removeEmptyChannel();
         broadcastMessageInMenu();
     }
-
-    public void removeEmptyChannels(){
-
+/*
+ public Map<Session, Channel> userChannelMap = new ConcurrentHashMap<>();
+    public Map<String, Channel> nameChannelMap = new ConcurrentHashMap<>();
+ */
+    public void removeEmptyChannel(){
+        Collection<Channel> activeChannels = userChannelMap.values();
+        Collection<Channel> allChannels = nameChannelMap.values();
+        ArrayList<Channel> emptyChannels;
+        emptyChannels = allChannels
+                .stream()
+                .filter(channel -> !activeChannels.contains(channel) && channel.canDelete && channel.isEmpty())
+                .collect(Collectors.toCollection(ArrayList::new));
+        for (Channel channel : emptyChannels){
+            String name = channel.getChannelName();
+            nameChannelMap.remove(name);
+        }
     }
 
     public void broadcastMessage(String sender, String message) {
