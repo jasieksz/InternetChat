@@ -3,10 +3,8 @@ import org.json.JSONObject;
 
 import java.net.HttpCookie;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
+import java.time.LocalTime;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -63,7 +61,14 @@ public class ChatFunctions {
 
     public void userMessage(Session user, String content) {
         Channel tmpChannel = userChannelMap.get(user);
-        tmpChannel.broadcastMessageOnChannel(tmpChannel.userNameMap.get(user),content);
+        if (tmpChannel.getChannelName().equals("Bot")){
+            tmpChannel.broadcastMessageOnChannel(tmpChannel.userNameMap.get(user),content);
+            String answer = askBot(content);
+            if (answer!=null)
+                tmpChannel.broadcastMessageOnChannel("Server",answer);
+        }
+        else
+            tmpChannel.broadcastMessageOnChannel(tmpChannel.userNameMap.get(user),content);
     }
 
     public void createChannel(String channelName) {
@@ -87,10 +92,7 @@ public class ChatFunctions {
         removeEmptyChannel();
         broadcastMessageInMenu();
     }
-/*
- public Map<Session, Channel> userChannelMap = new ConcurrentHashMap<>();
-    public Map<String, Channel> nameChannelMap = new ConcurrentHashMap<>();
- */
+
     public void removeEmptyChannel(){
         Collection<Channel> activeChannels = userChannelMap.values();
         Collection<Channel> allChannels = nameChannelMap.values();
@@ -104,7 +106,37 @@ public class ChatFunctions {
             nameChannelMap.remove(name);
         }
     }
+///
+// BOT ============================================================================================
+///
+    public String askBot(String message){
+        if (message.equals("Która godzina?"))
+            return "Jest godzina : " + LocalTime.now().toString();
+        else if (message.equals("Jaki dziś dzień tygodnia"))
+            return getDay();
+        else if (message.equals("Jaka jest pogoda w Krakowie?"))
+            return Weather.getWeather();
+        else
+            return null;
 
+    }
+//https://query.yahooapis.com/v1/public/yql?q=select%20item.condition.text%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22dallas%2C%20tx%22)&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
+    private String getWeather(){
+
+        return "";
+    }
+
+    private String getDay(){
+        String[] dayOfWeekNames = {"poniedzialek","wtorek","sroda","czwartek","piątek","sobota","niedziela"};
+        Calendar cal = Calendar.getInstance();
+        System.out.println(cal.getTime());
+        int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)-Calendar.MONDAY;
+        String day = dayOfWeekNames[dayOfWeek];
+        return "Dzisiaj jest " + day;
+    }
+///
+// BROADCAST ==================================
+///
     public void broadcastMessage(String sender, String message) {
         userNameMap.keySet().stream().filter(Session::isOpen).forEach(session -> {
             try {
